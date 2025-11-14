@@ -30,7 +30,7 @@ const docsData = {
                 <p class="mb-4">Tambahkan script Firemoo ke halaman HTML Anda dengan atribut yang diperlukan:</p>
 
                 <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6"><code>&lt;script
-    src="firemoo.js"
+    src="https://cdn.jsdelivr.net/gh/pimphand/cdn-firemoo/firemoo.js"
     api-key="YOUR_API_KEY"
     base-url="https://api-firemoo.dmpt.my.id"
     website-url="https://yourdomain.com"&gt;
