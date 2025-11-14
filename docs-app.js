@@ -21,13 +21,21 @@
     function renderSidebar() {
         if (!sidebarNav || !docsData || !docsData.sections) return;
 
-        const navHtml = docsData.sections.map(section => `
-            <a href="#${section.id}"
-               class="sidebar-link block px-4 py-2 mb-1 rounded hover:bg-gray-100 transition-colors"
-               data-section="${section.id}">
-                ${section.title}
-            </a>
-        `).join('');
+        // Group sections by category (if needed) or render as single group
+        const navHtml = `
+            <div class="sidebar-group">
+                <div class="sidebar-group-label px-2 py-1.5 mb-1">Dokumentasi</div>
+                <div class="space-y-1">
+                    ${docsData.sections.map(section => `
+                        <a href="#${section.id}"
+                           class="sidebar-link flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium"
+                           data-section="${section.id}">
+                            <span>${section.title}</span>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        `;
 
         sidebarNav.innerHTML = navHtml;
 
