@@ -22,7 +22,7 @@
         if (!sidebarNav || !docsData || !docsData.sections) return;
 
         const navHtml = docsData.sections.map(section => `
-            <a href="#${section.id}" 
+            <a href="#${section.id}"
                class="sidebar-link block px-4 py-2 mb-1 rounded hover:bg-gray-100 transition-colors"
                data-section="${section.id}">
                 ${section.title}
@@ -68,7 +68,7 @@
         if (contentContainer) {
             contentContainer.innerHTML = `
                 <section id="${section.id}" class="bg-white rounded-lg shadow-sm p-6 lg:p-8">
-                    <h2 class="text-3xl font-bold text-primary mb-6 pb-3 border-b-2 border-primary">${section.title}</h2>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-gray-900">${section.title}</h2>
                     <div class="prose max-w-none">
                         ${section.content}
                     </div>

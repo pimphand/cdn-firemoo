@@ -7,11 +7,11 @@ const docsData = {
             content: `
                 <p class="mb-4">Firemoo adalah SDK JavaScript untuk mengakses database real-time melalui CDN. Dengan Firemoo, Anda dapat dengan mudah mengelola collections, documents, dan menerima update real-time melalui WebSocket.</p>
 
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>📌 Info:</strong> Firemoo menggunakan API Key untuk autentikasi dan mendukung koneksi WebSocket untuk update real-time.
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Fitur Utama</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Fitur Utama</h3>
                 <ul class="list-disc list-inside space-y-2 mb-6">
                     <li>✅ Manajemen Collections (CRUD)</li>
                     <li>✅ Manajemen Documents (CRUD)</li>
@@ -36,11 +36,11 @@ const docsData = {
     website-url="https://yourdomain.com"&gt;
 &lt;/script&gt;</code></pre>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Atribut Script</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Atribut Script</h3>
                 <div class="overflow-x-auto mb-6">
                     <table class="min-w-full border-collapse border border-gray-300">
                         <thead>
-                            <tr class="bg-primary text-white">
+                            <tr class="bg-gray-900 text-white">
                                 <th class="border border-gray-300 px-4 py-2 text-left">Atribut</th>
                                 <th class="border border-gray-300 px-4 py-2 text-left">Wajib</th>
                                 <th class="border border-gray-300 px-4 py-2 text-left">Default</th>
@@ -70,7 +70,7 @@ const docsData = {
                     </table>
                 </div>
 
-                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>⚠️ Peringatan:</strong> API Key wajib disediakan. Jika tidak ada, script akan throw error.
                 </div>
             `
@@ -90,7 +90,7 @@ console.log(config);
 //   websiteUrl: "https://yourdomain.com"
 // }</code></pre>
 
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>📌 Info:</strong> Base URL secara otomatis menghilangkan trailing slash jika ada.
                 </div>
             `
@@ -142,7 +142,7 @@ console.log(config);
     console.error('Error:', error);
 }`)}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Alternatif: Menggunakan Object Collections</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Alternatif: Menggunakan Object Collections</h3>
                 <p class="mb-4">Anda juga dapat menggunakan object <code class="bg-gray-100 px-2 py-1 rounded">firemoo.collections</code> secara langsung:</p>
                 <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6"><code>// Setara dengan firemoo.getCollections()
 await firemoo.collections.getAll();
@@ -256,13 +256,13 @@ await firemoo.collections.delete(collectionId);</code></pre>
     console.error('Error:', error);
 }`)}
 
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>📌 Perbedaan Update vs Patch:</strong><br>
                     - <code class="bg-gray-100 px-2 py-1 rounded">updateDocument</code> akan mengganti seluruh document dengan data baru<br>
                     - <code class="bg-gray-100 px-2 py-1 rounded">patchDocument</code> hanya akan mengupdate field yang disediakan, field lain tetap tidak berubah
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Alternatif: Menggunakan Object Documents</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Alternatif: Menggunakan Object Documents</h3>
                 <p class="mb-4">Anda juga dapat menggunakan object <code class="bg-gray-100 px-2 py-1 rounded">firemoo.documents</code> secara langsung:</p>
                 <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6"><code>// Setara dengan firemoo.getDocuments(id, options)
 await firemoo.documents.getAll(collectionId, options);
@@ -301,7 +301,7 @@ ws.on('disconnected', () => {
     console.log('WebSocket disconnected!');
 }`)}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Methods WebSocket</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Methods WebSocket</h3>
 
                 ${createMethodCard('ws.connect(options)', 'Connect ke WebSocket server (otomatis dipanggil oleh firemoo.websocket()).', 'async connect(options?: Object) → Promise&lt;void&gt;', [
                     { name: 'options', type: 'Object', desc: 'onConnect (Function), onError (Function), onDisconnect (Function)', optional: true }
@@ -354,11 +354,11 @@ ws.off('firestore:event');`)}
 
                 ${createMethodCard('ws.ping()', 'Mengirim ping ke server.', 'ping() → void', [], 'void', `ws.ping();`)}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Properties WebSocket</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Properties WebSocket</h3>
                 <div class="overflow-x-auto mb-6">
                     <table class="min-w-full border-collapse border border-gray-300">
                         <thead>
-                            <tr class="bg-primary text-white">
+                            <tr class="bg-gray-900 text-white">
                                 <th class="border border-gray-300 px-4 py-2 text-left">Property</th>
                                 <th class="border border-gray-300 px-4 py-2 text-left">Type</th>
                                 <th class="border border-gray-300 px-4 py-2 text-left">Deskripsi</th>
@@ -389,7 +389,7 @@ ws.off('firestore:event');`)}
                     </table>
                 </div>
 
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>📌 Auto-Reconnect:</strong> WebSocket akan otomatis mencoba reconnect hingga 5 kali jika koneksi terputus. Delay akan bertambah setiap attempt (1s, 2s, 3s, 4s, 5s).
                 </div>
             `
@@ -400,14 +400,14 @@ ws.off('firestore:event');`)}
             content: `
                 <p class="mb-6">Daftar event yang dapat di-listen melalui WebSocket.</p>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Connection Events</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Connection Events</h3>
                 ${createEventTable([
                     { event: 'connected', data: '-', desc: 'Dipanggil saat WebSocket berhasil connect' },
                     { event: 'disconnected', data: '-', desc: 'Dipanggil saat WebSocket disconnect' },
                     { event: 'error', data: 'Error object', desc: 'Dipanggil saat terjadi error pada WebSocket' }
                 ])}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Firestore Events</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Firestore Events</h3>
                 ${createEventTable([
                     { event: 'firestore:connected', data: 'Message object', desc: 'Dipanggil saat berhasil connect ke Firestore channel' },
                     { event: 'firestore:event', data: 'Event data', desc: 'Dipanggil untuk semua event Firestore (document/collection changes)' },
@@ -415,19 +415,19 @@ ws.off('firestore:event');`)}
                     { event: 'collection_*', data: 'Event data', desc: 'Event spesifik untuk collection changes (contoh: collection_created, collection_deleted)' }
                 ])}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Channel Events</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Channel Events</h3>
                 ${createEventTable([
                     { event: 'channel:event', data: '{ channel, event, data }', desc: 'Generic event untuk semua channel events' },
                     { event: 'channel:{channel}:{event}', data: 'Event data', desc: 'Event spesifik untuk channel tertentu (contoh: channel:notifications:new)' }
                 ])}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">System Events</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">System Events</h3>
                 ${createEventTable([
                     { event: 'system:event', data: '{ event, data }', desc: 'Generic event untuk semua system events' },
                     { event: 'system:{event}', data: 'Event data', desc: 'Event spesifik untuk system (contoh: system:ping, system:pong)' }
                 ])}
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Generic Events</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Generic Events</h3>
                 ${createEventTable([
                     { event: 'message', data: 'Message object', desc: 'Default event untuk semua message yang tidak cocok dengan pattern di atas' }
                 ])}
@@ -437,9 +437,9 @@ ws.off('firestore:event');`)}
             id: 'examples',
             title: '8. Contoh Penggunaan Lengkap',
             content: `
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Contoh 1: CRUD Operations</h3>
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-                    <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh 1: CRUD Operations</h3>
+                <div class="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-6">
+                    <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>// Create Collection
 const collection = await firemoo.createCollection('users');
 const collectionId = collection.id;
@@ -482,9 +482,9 @@ await firemoo.deleteDocument(collectionId, user1.id);
 await firemoo.deleteCollection(collectionId);</code></pre>
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Contoh 2: Real-time Updates dengan WebSocket</h3>
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-                    <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh 2: Real-time Updates dengan WebSocket</h3>
+                <div class="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-6">
+                    <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>// Connect WebSocket
 const ws = firemoo.websocket();
 
@@ -530,9 +530,9 @@ ws.on('channel:notifications:new', (notification) => {
 // ws.disconnect();</code></pre>
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Contoh 3: Pagination</h3>
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-                    <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh 3: Pagination</h3>
+                <div class="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-6">
+                    <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>async function loadDocuments(collectionId, page = 1, limit = 10) {
     try {
         const response = await firemoo.getDocuments(collectionId, {
@@ -558,9 +558,9 @@ await loadDocuments('collection-id', 1, 10);
 await loadDocuments('collection-id', 2, 10);</code></pre>
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Contoh 4: Error Handling</h3>
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-                    <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh 4: Error Handling</h3>
+                <div class="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-6">
+                    <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>async function safeOperation() {
     try {
         const collections = await firemoo.getCollections();
@@ -589,9 +589,9 @@ safeOperation()
     });</code></pre>
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Contoh 5: Nested Collections</h3>
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-                    <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh 5: Nested Collections</h3>
+                <div class="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-6">
+                    <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>// Create parent collection
 const usersCollection = await firemoo.createCollection('users');
 const userDoc = await firemoo.createDocument(usersCollection.id, {
@@ -613,9 +613,9 @@ const post = await firemoo.createDocument(postsCollection.id, {
 });</code></pre>
                 </div>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Contoh 6: WebSocket dengan Multiple Channels</h3>
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
-                    <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh 6: WebSocket dengan Multiple Channels</h3>
+                <div class="bg-gray-100 border border-gray-300 p-4 rounded-lg mb-6">
+                    <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>const ws = firemoo.websocket();
 
 // Wait for connection
@@ -669,14 +669,14 @@ ws.send({
             id: 'additional',
             title: '9. Informasi Tambahan',
             content: `
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Version & Metadata</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Version & Metadata</h3>
                 <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6"><code>console.log(firemoo.version);      // "1.0.0"
 console.log(firemoo.name);          // "firemoo"
 console.log(firemoo.description);   // "Firemoo is a real-time database for your web applications."
 console.log(firemoo.author);        // "Pimphand"
 console.log(firemoo.license);       // "MIT"</code></pre>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">Headers HTTP Request</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Headers HTTP Request</h3>
                 <p class="mb-4">Semua request API otomatis mengirim headers berikut:</p>
                 <ul class="list-disc list-inside space-y-2 mb-6">
                     <li><code class="bg-gray-100 px-2 py-1 rounded">Content-Type: application/json</code></li>
@@ -684,7 +684,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
                     <li><code class="bg-gray-100 px-2 py-1 rounded">X-Website-Url: YOUR_WEBSITE_URL</code></li>
                 </ul>
 
-                <h3 class="text-2xl font-bold text-secondary mt-8 mb-4">WebSocket URL Format</h3>
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">WebSocket URL Format</h3>
                 <p class="mb-4">WebSocket URL otomatis di-generate dari base URL:</p>
                 <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6"><code>// HTTP base URL: https://api-firemoo.dmpt.my.id
 // WebSocket URL: ws://localhost:9090/websocket?api_key=...&website_url=...
@@ -692,7 +692,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
 // HTTPS base URL: https://api.example.com
 // WebSocket URL: wss://api.example.com/websocket?api_key=...&website_url=...</code></pre>
 
-                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>⚠️ Catatan Keamanan:</strong>
                     <ul class="list-disc list-inside mt-2 space-y-1">
                         <li>Jangan expose API Key di client-side jika memungkinkan (gunakan environment variables atau backend proxy)</li>
@@ -702,7 +702,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
                     </ul>
                 </div>
 
-                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded">
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
                     <strong>✅ Best Practices:</strong>
                     <ul class="list-disc list-inside mt-2 space-y-1">
                         <li>Selalu handle error dengan try-catch</li>
@@ -723,26 +723,26 @@ function createMethodCard(name, description, signature, params, returns, example
     if (params && params.length > 0) {
         paramsHtml = params.map(p => `
             <div class="mb-2 pl-4">
-                <span class="font-bold text-primary">${p.name}</span> 
-                (<span class="text-green-600 italic">${p.type}</span>${p.optional ? ', optional' : ''}) 
+                <span class="font-bold text-gray-900">${p.name}</span>
+                (<span class="text-gray-600 italic">${p.type}</span>${p.optional ? ', optional' : ''})
                 - ${p.desc}
             </div>
         `).join('');
     }
 
     return `
-        <div class="bg-gray-50 border-l-4 border-primary p-6 rounded-lg mb-6">
-            <div class="text-xl font-bold text-primary mb-2">${name}</div>
+        <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
+            <div class="text-xl font-bold text-gray-900 mb-2">${name}</div>
             <p class="mb-4">${description}</p>
             <div class="bg-gray-900 text-gray-100 p-4 rounded mb-4 overflow-x-auto">
                 <code>${signature}</code>
             </div>
             ${paramsHtml ? `<div class="mb-4">${paramsHtml}</div>` : ''}
             <div class="mb-4 pl-4">
-                <strong>Returns:</strong> <span class="text-green-600 italic">${returns}</span>
+                <strong>Returns:</strong> <span class="text-gray-600 italic">${returns}</span>
             </div>
-            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded">
-                <div class="font-bold text-yellow-800 mb-2">Contoh:</div>
+            <div class="bg-gray-100 border border-gray-300 p-4 rounded">
+                <div class="font-bold text-gray-800 mb-2">Contoh:</div>
                 <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>${example}</code></pre>
             </div>
         </div>
@@ -763,7 +763,7 @@ function createEventTable(events) {
         <div class="overflow-x-auto mb-6">
             <table class="min-w-full border-collapse border border-gray-300">
                 <thead>
-                    <tr class="bg-primary text-white">
+                    <tr class="bg-gray-900 text-white">
                         <th class="border border-gray-300 px-4 py-2 text-left">Event</th>
                         <th class="border border-gray-300 px-4 py-2 text-left">Data</th>
                         <th class="border border-gray-300 px-4 py-2 text-left">Deskripsi</th>
