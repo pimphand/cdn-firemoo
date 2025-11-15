@@ -713,6 +713,137 @@ console.log(firemoo.license);       // "MIT"</code></pre>
                     </ul>
                 </div>
             `
+        },
+        {
+            id: 'chat-widget',
+            title: '9. Chat Widget',
+            content: `
+                <p class="mb-4">Firemoo Chat Widget adalah widget chat yang dapat di-embed di website Anda. Widget ini muncul di pojok kanan bawah (atau kiri) dan memungkinkan visitor untuk berkomunikasi dengan tim support Anda secara real-time.</p>
+
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Instalasi</h3>
+                <p class="mb-4">Tambahkan script Firemoo Chat Widget ke halaman HTML Anda:</p>
+
+                <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6"><code>&lt;script
+    src="https://cdn.jsdelivr.net/gh/pimphand/cdn-firemoo/firemoo-chat.js"
+    api-key="YOUR_API_KEY"
+    base-url="https://api-firemoo.dmpt.my.id"
+    primary-color="#10b981"
+    text-color="#ffffff"
+    position="bottom-right"&gt;
+&lt;/script&gt;</code></pre>
+
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Atribut Konfigurasi</h3>
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-900 text-white">
+                                <th class="border border-gray-300 px-4 py-2 text-left">Atribut</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Wajib</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Default</th>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">api-key</code></td>
+                                <td class="border border-gray-300 px-4 py-2">✅ Ya</td>
+                                <td class="border border-gray-300 px-4 py-2">-</td>
+                                <td class="border border-gray-300 px-4 py-2">API Key untuk autentikasi</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">base-url</code></td>
+                                <td class="border border-gray-300 px-4 py-2">❌ Tidak</td>
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">api-firemoo.dmpt.my.id</code></td>
+                                <td class="border border-gray-300 px-4 py-2">URL base server API</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">primary-color</code></td>
+                                <td class="border border-gray-300 px-4 py-2">❌ Tidak</td>
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">#10b981</code></td>
+                                <td class="border border-gray-300 px-4 py-2">Warna utama widget (button, header, dll)</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">text-color</code></td>
+                                <td class="border border-gray-300 px-4 py-2">❌ Tidak</td>
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">#ffffff</code></td>
+                                <td class="border border-gray-300 px-4 py-2">Warna teks pada elemen dengan primary-color</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">position</code></td>
+                                <td class="border border-gray-300 px-4 py-2">❌ Tidak</td>
+                                <td class="border border-gray-300 px-4 py-2"><code class="bg-gray-100 px-2 py-1 rounded">bottom-right</code></td>
+                                <td class="border border-gray-300 px-4 py-2">Posisi widget: <code class="bg-gray-100 px-2 py-1 rounded">bottom-right</code> atau <code class="bg-gray-100 px-2 py-1 rounded">bottom-left</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Contoh Penggunaan</h3>
+                
+                <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
+                    <div class="text-xl font-bold text-gray-900 mb-2">Konfigurasi Dasar</div>
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>&lt;script
+    src="firemoo-chat.js"
+    api-key="your-api-key-here"
+    base-url="https://api-firemoo.dmpt.my.id"&gt;
+&lt;/script&gt;</code></pre>
+                </div>
+
+                <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
+                    <div class="text-xl font-bold text-gray-900 mb-2">Dengan Warna Custom</div>
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>&lt;script
+    src="firemoo-chat.js"
+    api-key="your-api-key-here"
+    base-url="https://api-firemoo.dmpt.my.id"
+    primary-color="#3b82f6"
+    text-color="#ffffff"&gt;
+&lt;/script&gt;</code></pre>
+                </div>
+
+                <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
+                    <div class="text-xl font-bold text-gray-900 mb-2">Posisi Kiri Bawah</div>
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>&lt;script
+    src="firemoo-chat.js"
+    api-key="your-api-key-here"
+    base-url="https://api-firemoo.dmpt.my.id"
+    position="bottom-left"&gt;
+&lt;/script&gt;</code></pre>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Fitur Widget</h3>
+                <ul class="list-disc list-inside space-y-2 mb-6">
+                    <li>✅ Widget muncul di pojok kanan/kiri bawah</li>
+                    <li>✅ Chat window yang dapat dibuka/tutup</li>
+                    <li>✅ Auto-create conversation saat visitor mengirim pesan pertama</li>
+                    <li>✅ Auto-save conversation ID di localStorage</li>
+                    <li>✅ Auto-polling untuk mendapatkan pesan baru dari agent</li>
+                    <li>✅ Responsive design (mobile-friendly)</li>
+                    <li>✅ Warna dapat dikustomisasi</li>
+                    <li>✅ Visitor ID otomatis di-generate dan disimpan</li>
+                </ul>
+
+                <h3 class="text-2xl font-bold text-gray-700 mt-8 mb-4">Cara Kerja</h3>
+                <ol class="list-decimal list-inside space-y-2 mb-6">
+                    <li>Widget otomatis membuat Visitor ID unik dan menyimpannya di localStorage</li>
+                    <li>Saat visitor mengirim pesan pertama, widget membuat conversation baru via API</li>
+                    <li>Conversation ID disimpan di localStorage untuk session berikutnya</li>
+                    <li>Widget melakukan polling setiap 3 detik untuk mendapatkan pesan baru dari agent</li>
+                    <li>Semua pesan ditampilkan dalam chat window dengan timestamp</li>
+                </ol>
+
+                <div class="bg-gray-100 border-l-4 border-gray-500 p-4 mb-6 rounded">
+                    <strong>📌 Catatan:</strong> Widget menggunakan API endpoints berikut:
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li><code class="bg-gray-100 px-2 py-1 rounded">POST /api/chat/conversations</code> - Membuat conversation baru</li>
+                        <li><code class="bg-gray-100 px-2 py-1 rounded">GET /api/chat/conversations/:id/messages</code> - Mendapatkan messages</li>
+                        <li><code class="bg-gray-100 px-2 py-1 rounded">POST /api/chat/conversations/:id/messages</code> - Mengirim message</li>
+                    </ul>
+                </div>
+
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6 rounded">
+                    <strong>⚠️ Peringatan:</strong> Pastikan API Key yang digunakan memiliki akses ke chat endpoints. Widget akan otomatis mengirim API Key di header <code class="bg-gray-100 px-2 py-1 rounded">X-API-Key</code>.
+                </div>
+            `
         }
     ]
 };

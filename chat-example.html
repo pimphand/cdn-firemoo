@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firemoo Chat Widget - Contoh</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔥 Firemoo Chat Widget</h1>
+        <p class="subtitle">Contoh penggunaan widget chat yang dapat di-embed</p>
+
+        <div class="info-box">
+            <strong>📌 Info:</strong> Widget chat akan muncul di pojok kanan bawah halaman ini.
+            Klik tombol chat untuk membuka window chat.
+        </div>
+
+        <h2>Konfigurasi Saat Ini</h2>
+        <div class="code-block">
+            <code>&lt;script
+    src="firemoo-chat.js"
+    api-key="YOUR_API_KEY"
+    base-url="https://api-firemoo.dmpt.my.id"
+    primary-color="#10b981"
+    text-color="#ffffff"
+    position="bottom-right"&gt;
+&lt;/script&gt;</code>
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Peringatan:</strong> Ganti <code>YOUR_API_KEY</code> dengan API Key yang valid
+            untuk menggunakan widget chat. Widget akan otomatis membuat conversation saat visitor
+            mengirim pesan pertama.
+        </div>
+
+        <h2>Fitur Widget</h2>
+        <ul>
+            <li>✅ Widget muncul di pojok kanan/kiri bawah</li>
+            <li>✅ Chat window yang dapat dibuka/tutup</li>
+            <li>✅ Auto-create conversation saat visitor mengirim pesan pertama</li>
+            <li>✅ Auto-save conversation ID di localStorage</li>
+            <li>✅ Auto-polling untuk mendapatkan pesan baru dari agent</li>
+            <li>✅ Responsive design (mobile-friendly)</li>
+            <li>✅ Warna dapat dikustomisasi</li>
+        </ul>
+
+        <h2>Contoh Konfigurasi Lain</h2>
+
+        <h3>Warna Custom (Biru)</h3>
+        <div class="code-block">
+            <code>&lt;script
+    src="firemoo-chat.js"
+    api-key="YOUR_API_KEY"
+    base-url="https://api-firemoo.dmpt.my.id"
+    primary-color="#3b82f6"
+    text-color="#ffffff"&gt;
+&lt;/script&gt;</code>
+        </div>
+
+        <h3>Posisi Kiri Bawah</h3>
+        <div class="code-block">
+            <code>&lt;script
+    src="firemoo-chat.js"
+    api-key="YOUR_API_KEY"
+    base-url="https://api-firemoo.dmpt.my.id"
+    position="bottom-left"&gt;
+&lt;/script&gt;</code>
+        </div>
+    </div>
+
+    <!-- Firemoo Chat Widget -->
+    <script src="firemoo-chat.js" api-key="YOUR_API_KEY" base-url="https://api-firemoo.dmpt.my.id"
+        primary-color="#10b981" text-color="#ffffff" position="bottom-right">
+        </script>
+</body>
+
+</html>
