@@ -1,0 +1,13 @@
+{
+  "name": "firemoo-cdn",
+  "version": "1.0.0",
+  "description": "Firemoo CDN Documentation Server",
+  "scripts": {
+    "start": "npx serve -p 5000",
+    "dev": "npx serve -p 5000"
+  },
+  "keywords": ["firemoo", "cdn", "documentation"],
+  "author": "Pimphand",
+  "license": "MIT"
+}
+
