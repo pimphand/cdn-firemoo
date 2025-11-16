@@ -69,6 +69,25 @@
 
   const visitorID = getVisitorID();
 
+  // Get or save visitor data from localStorage
+  function getVisitorData() {
+    const storageKey = 'firemoo_chat_visitor_data';
+    const data = localStorage.getItem(storageKey);
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  function saveVisitorData(data) {
+    const storageKey = 'firemoo_chat_visitor_data';
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  }
+
   // Helper function to make API requests
   async function apiRequest(method, endpoint, data = null) {
     const url = `${config.baseUrl}${endpoint}`;
@@ -107,8 +126,16 @@
       this.conversationId = null;
       this.messages = [];
       this.isLoading = false;
-      this.pollInterval = null;
-      this.pollDelay = 3000; // Poll every 3 seconds for new messages
+      this.ws = null;
+      this.wsReconnectAttempts = 0;
+      this.maxReconnectAttempts = 5;
+      this.reconnectDelay = 3000;
+      this.shouldReconnect = true;
+      this.visitorData = getVisitorData();
+      this.showForm = !this.visitorData; // Show form if no visitor data
+      this.hasExistingConversation = false;
+      this.isChatActive = false; // Track if chat is already active
+      this.sentMessageIds = new Set(); // Track message IDs sent from this widget (always visitor)
 
       this.init();
     }
@@ -116,7 +143,12 @@
     init() {
       this.createWidget();
       this.attachEventListeners();
-      this.loadExistingConversation();
+      this.checkExistingConversation();
+      
+      // Cleanup WebSocket on page unload
+      window.addEventListener('beforeunload', () => {
+        this.disconnectWebSocket();
+      });
     }
 
     createWidget() {
@@ -150,8 +182,77 @@
             </button>
           </div>
 
+          <!-- Visitor Info Form -->
+          <div id="firemoo-chat-form" class="firemoo-chat-form" style="display: none;">
+            <div class="firemoo-chat-form-content">
+              <div class="firemoo-chat-form-title">Isi Data Diri Anda</div>
+              <div class="firemoo-chat-form-subtitle">Mohon lengkapi informasi berikut untuk memulai chat</div>
+              
+              <div class="firemoo-chat-form-group">
+                <label for="firemoo-chat-name">Nama Lengkap *</label>
+                <input 
+                  type="text" 
+                  id="firemoo-chat-name" 
+                  class="firemoo-chat-form-input" 
+                  placeholder="Masukkan nama lengkap"
+                  required
+                />
+              </div>
+              
+              <div class="firemoo-chat-form-group">
+                <label for="firemoo-chat-email">Email *</label>
+                <input 
+                  type="email" 
+                  id="firemoo-chat-email" 
+                  class="firemoo-chat-form-input" 
+                  placeholder="nama@email.com"
+                  required
+                />
+              </div>
+              
+              <div class="firemoo-chat-form-group">
+                <label for="firemoo-chat-phone">Nomor Telepon *</label>
+                <input 
+                  type="tel" 
+                  id="firemoo-chat-phone" 
+                  class="firemoo-chat-form-input" 
+                  placeholder="+6281234567890"
+                  required
+                />
+              </div>
+              
+              <button id="firemoo-chat-form-submit" class="firemoo-chat-form-submit">
+                Mulai Chat
+              </button>
+            </div>
+          </div>
+
+          <!-- Continue or New Chat Options -->
+          <div id="firemoo-chat-options" class="firemoo-chat-options" style="display: none;">
+            <div class="firemoo-chat-options-content">
+              <div class="firemoo-chat-options-title">Anda memiliki chat sebelumnya</div>
+              <div class="firemoo-chat-options-subtitle">Pilih opsi di bawah ini</div>
+              
+              <button id="firemoo-chat-continue" class="firemoo-chat-option-button">
+                <span class="firemoo-chat-option-icon">💬</span>
+                <span class="firemoo-chat-option-text">
+                  <div class="firemoo-chat-option-title">Lanjutkan Chat</div>
+                  <div class="firemoo-chat-option-desc">Lanjutkan percakapan sebelumnya</div>
+                </span>
+              </button>
+              
+              <button id="firemoo-chat-new" class="firemoo-chat-option-button">
+                <span class="firemoo-chat-option-icon">🆕</span>
+                <span class="firemoo-chat-option-text">
+                  <div class="firemoo-chat-option-title">Chat Baru</div>
+                  <div class="firemoo-chat-option-desc">Mulai percakapan baru</div>
+                </span>
+              </button>
+            </div>
+          </div>
+
           <!-- Messages Container -->
-          <div id="firemoo-chat-messages" class="firemoo-chat-messages">
+          <div id="firemoo-chat-messages" class="firemoo-chat-messages" style="display: none;">
             <div class="firemoo-chat-welcome">
               <div class="firemoo-chat-welcome-icon">👋</div>
               <div class="firemoo-chat-welcome-text">
@@ -162,7 +263,7 @@
           </div>
 
           <!-- Input Container -->
-          <div class="firemoo-chat-input-container">
+          <div id="firemoo-chat-input-container" class="firemoo-chat-input-container" style="display: none;">
             <div id="firemoo-chat-typing" class="firemoo-chat-typing" style="display: none;">
               <span></span>
               <span></span>
@@ -319,7 +420,8 @@
           background: #f9fafb;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 4px;
+          scroll-behavior: smooth;
         }
 
         .firemoo-chat-messages::-webkit-scrollbar {
@@ -364,44 +466,67 @@
 
         .firemoo-chat-message {
           display: flex;
-          margin-bottom: 8px;
-          animation: firemoo-message-appear 0.3s ease;
-        }
-
-        @keyframes firemoo-message-appear {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
+          flex-direction: row;
+          margin-bottom: 12px;
             opacity: 1;
-            transform: translateY(0);
-          }
+          transform: translateX(0);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+          width: 100%;
+          box-sizing: border-box;
         }
 
+        /* Visitor (Pengirim) - Posisi KANAN */
         .firemoo-chat-message.visitor {
           justify-content: flex-end;
+          align-items: flex-end;
         }
 
+        /* Agent (Penerima/Admin) - Posisi KIRI */
         .firemoo-chat-message.agent {
           justify-content: flex-start;
+          align-items: flex-start;
+        }
+
+        .firemoo-chat-message-content {
+          display: flex;
+          flex-direction: column;
+          max-width: 75%;
+          min-width: 0;
+        }
+
+        /* Visitor content - align ke kanan (pengirim) */
+        .firemoo-chat-message.visitor .firemoo-chat-message-content {
+          align-items: flex-end;
+          margin-left: auto;
+        }
+
+        /* Agent content - align ke kiri (penerima/admin) */
+        .firemoo-chat-message.agent .firemoo-chat-message-content {
+          align-items: flex-start;
+          margin-right: auto;
         }
 
         .firemoo-chat-message-bubble {
-          max-width: 75%;
           padding: 12px 16px;
           border-radius: 18px;
           word-wrap: break-word;
+          word-break: break-word;
           line-height: 1.5;
           font-size: 14px;
+          max-width: 100%;
+          box-sizing: border-box;
+          display: block;
+          text-align: left;
         }
 
+        /* Visitor bubble - KANAN dengan warna primary (pengirim) */
         .firemoo-chat-message.visitor .firemoo-chat-message-bubble {
           background-color: ${config.primaryColor};
           color: ${config.textColor};
           border-bottom-right-radius: 4px;
         }
 
+        /* Agent bubble - KIRI dengan background putih (penerima/admin) */
         .firemoo-chat-message.agent .firemoo-chat-message-bubble {
           background-color: white;
           color: #111827;
@@ -414,12 +539,16 @@
           color: #9ca3af;
           margin-top: 4px;
           padding: 0 4px;
+          display: block;
+          width: 100%;
         }
 
+        /* Visitor time - align KANAN */
         .firemoo-chat-message.visitor .firemoo-chat-message-time {
           text-align: right;
         }
 
+        /* Agent time - align KIRI */
         .firemoo-chat-message.agent .firemoo-chat-message-time {
           text-align: left;
         }
@@ -508,6 +637,161 @@
           cursor: not-allowed;
         }
 
+        .firemoo-chat-form {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px;
+          background: #f9fafb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .firemoo-chat-form-content {
+          width: 100%;
+          max-width: 320px;
+        }
+
+        .firemoo-chat-form-title {
+          font-weight: 600;
+          font-size: 18px;
+          color: #111827;
+          margin-bottom: 8px;
+          text-align: center;
+        }
+
+        .firemoo-chat-form-subtitle {
+          font-size: 14px;
+          color: #6b7280;
+          margin-bottom: 24px;
+          text-align: center;
+        }
+
+        .firemoo-chat-form-group {
+          margin-bottom: 16px;
+        }
+
+        .firemoo-chat-form-group label {
+          display: block;
+          font-size: 14px;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 8px;
+        }
+
+        .firemoo-chat-form-input {
+          width: 100%;
+          padding: 12px 16px;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.2s;
+          box-sizing: border-box;
+        }
+
+        .firemoo-chat-form-input:focus {
+          border-color: ${config.primaryColor};
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .firemoo-chat-form-submit {
+          width: 100%;
+          padding: 12px 24px;
+          background-color: ${config.primaryColor};
+          color: ${config.textColor};
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          margin-top: 8px;
+        }
+
+        .firemoo-chat-form-submit:hover:not(:disabled) {
+          opacity: 0.9;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .firemoo-chat-form-submit:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .firemoo-chat-options {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px;
+          background: #f9fafb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .firemoo-chat-options-content {
+          width: 100%;
+          max-width: 320px;
+        }
+
+        .firemoo-chat-options-title {
+          font-weight: 600;
+          font-size: 18px;
+          color: #111827;
+          margin-bottom: 8px;
+          text-align: center;
+        }
+
+        .firemoo-chat-options-subtitle {
+          font-size: 14px;
+          color: #6b7280;
+          margin-bottom: 24px;
+          text-align: center;
+        }
+
+        .firemoo-chat-option-button {
+          width: 100%;
+          padding: 16px;
+          background: white;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-align: left;
+        }
+
+        .firemoo-chat-option-button:hover {
+          border-color: ${config.primaryColor};
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
+        }
+
+        .firemoo-chat-option-icon {
+          font-size: 24px;
+          flex-shrink: 0;
+        }
+
+        .firemoo-chat-option-text {
+          flex: 1;
+        }
+
+        .firemoo-chat-option-title {
+          font-weight: 600;
+          font-size: 14px;
+          color: #111827;
+          margin-bottom: 4px;
+        }
+
+        .firemoo-chat-option-desc {
+          font-size: 12px;
+          color: #6b7280;
+        }
+
         @media (max-width: 480px) {
           .firemoo-chat-window {
             width: calc(100vw - 20px);
@@ -526,6 +810,9 @@
       const closeBtn = document.getElementById('firemoo-chat-close');
       const sendBtn = document.getElementById('firemoo-chat-send');
       const input = document.getElementById('firemoo-chat-input');
+      const formSubmit = document.getElementById('firemoo-chat-form-submit');
+      const continueBtn = document.getElementById('firemoo-chat-continue');
+      const newChatBtn = document.getElementById('firemoo-chat-new');
 
       button.addEventListener('click', () => this.toggleChat());
       closeBtn.addEventListener('click', () => this.closeChat());
@@ -537,6 +824,50 @@
           this.sendMessage();
         }
       });
+
+      if (formSubmit) {
+        formSubmit.addEventListener('click', () => this.submitForm());
+      }
+
+      // Allow form submission with Enter key
+      const nameInput = document.getElementById('firemoo-chat-name');
+      const emailInput = document.getElementById('firemoo-chat-email');
+      const phoneInput = document.getElementById('firemoo-chat-phone');
+      
+      if (nameInput) {
+        nameInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            emailInput.focus();
+          }
+        });
+      }
+      
+      if (emailInput) {
+        emailInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            phoneInput.focus();
+          }
+        });
+      }
+      
+      if (phoneInput) {
+        phoneInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            this.submitForm();
+          }
+        });
+      }
+
+      if (continueBtn) {
+        continueBtn.addEventListener('click', () => this.continueChat());
+      }
+
+      if (newChatBtn) {
+        newChatBtn.addEventListener('click', () => this.startNewChat());
+      }
     }
 
     toggleChat() {
@@ -552,13 +883,44 @@
       window.classList.add('open');
       this.isOpen = true;
       
-      // Focus input
-      setTimeout(() => {
-        document.getElementById('firemoo-chat-input').focus();
-      }, 100);
+      // Show appropriate view
+      this.showCurrentView();
+      
+      // Connect WebSocket if chat is active
+      if (this.isChatActive || (!this.visitorData && !this.hasExistingConversation)) {
+        // Will connect when chat interface is shown
+      }
+    }
 
-      // Start polling for messages
-      this.startPolling();
+    showCurrentView() {
+      const form = document.getElementById('firemoo-chat-form');
+      const options = document.getElementById('firemoo-chat-options');
+      const messages = document.getElementById('firemoo-chat-messages');
+      const inputContainer = document.getElementById('firemoo-chat-input-container');
+
+      // Hide all views first
+      if (form) form.style.display = 'none';
+      if (options) options.style.display = 'none';
+      if (messages) messages.style.display = 'none';
+      if (inputContainer) inputContainer.style.display = 'none';
+
+      // Show appropriate view
+      if (!this.visitorData) {
+        // Show form if no visitor data
+        if (form) form.style.display = 'flex';
+      } else if (this.hasExistingConversation && this.conversationId) {
+        // Show options if has existing conversation (only on first open)
+        // After user chooses, it will show chat interface
+        if (options && !this.isChatActive) {
+          if (options) options.style.display = 'flex';
+        } else {
+          // Show chat interface if already active
+          this.showChatInterface();
+        }
+      } else {
+        // Show chat interface if visitor data exists but no conversation
+        this.showChatInterface();
+      }
     }
 
     closeChat() {
@@ -566,35 +928,176 @@
       window.classList.remove('open');
       this.isOpen = false;
       
-      // Stop polling
-      this.stopPolling();
+      // Disconnect WebSocket
+      this.disconnectWebSocket();
+      
+      // Reset chat active state when closing (so options show again on next open if conversation exists)
+      // Only reset if we have existing conversation, otherwise keep it active
+      if (this.hasExistingConversation && this.conversationId) {
+        this.isChatActive = false;
+      }
     }
 
-    async loadExistingConversation() {
+    async checkExistingConversation() {
       // Try to load conversation from localStorage
       const storageKey = `firemoo_chat_conversation_${visitorID}`;
       const savedConversationId = localStorage.getItem(storageKey);
       
       if (savedConversationId) {
         this.conversationId = savedConversationId;
+        this.hasExistingConversation = true;
+        
+        // Try to verify conversation exists
+        try {
         await this.loadMessages();
+        } catch (error) {
+          // Conversation might not exist, clear it
+          this.conversationId = null;
+          this.hasExistingConversation = false;
+          localStorage.removeItem(storageKey);
+        }
       }
+    }
+
+    async loadExistingConversation() {
+      if (this.conversationId) {
+        await this.loadMessages();
+        this.showChatInterface();
+      }
+    }
+
+    showChatInterface() {
+      const form = document.getElementById('firemoo-chat-form');
+      const options = document.getElementById('firemoo-chat-options');
+      const messages = document.getElementById('firemoo-chat-messages');
+      const inputContainer = document.getElementById('firemoo-chat-input-container');
+
+      if (form) form.style.display = 'none';
+      if (options) options.style.display = 'none';
+      if (messages) messages.style.display = 'flex';
+      if (inputContainer) inputContainer.style.display = 'block';
+
+      this.isChatActive = true;
+
+      setTimeout(() => {
+        const input = document.getElementById('firemoo-chat-input');
+        if (input) input.focus();
+      }, 100);
+
+      // Connect WebSocket for real-time messages
+      this.connectWebSocket();
+    }
+
+    submitForm() {
+      const nameInput = document.getElementById('firemoo-chat-name');
+      const emailInput = document.getElementById('firemoo-chat-email');
+      const phoneInput = document.getElementById('firemoo-chat-phone');
+      const submitBtn = document.getElementById('firemoo-chat-form-submit');
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const phone = phoneInput.value.trim();
+
+      // Validation
+      if (!name || !email || !phone) {
+        this.showError('Mohon lengkapi semua field yang wajib diisi.');
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        this.showError('Format email tidak valid.');
+        return;
+      }
+
+      // Save visitor data
+      const visitorData = { name, email, phone };
+      saveVisitorData(visitorData);
+      this.visitorData = visitorData;
+
+      // Hide form and show chat interface
+      this.showChatInterface();
+    }
+
+    continueChat() {
+      if (this.conversationId) {
+        this.shouldReconnect = true;
+        this.showChatInterface();
+      } else {
+        this.startNewChat();
+      }
+    }
+
+    startNewChat() {
+      // Clear conversation ID
+      const storageKey = `firemoo_chat_conversation_${visitorID}`;
+      localStorage.removeItem(storageKey);
+      this.conversationId = null;
+      this.hasExistingConversation = false;
+      this.messages = [];
+      this.isChatActive = true;
+
+      // Disconnect WebSocket for old conversation
+      this.disconnectWebSocket();
+
+      // Clear welcome message if exists
+      const container = document.getElementById('firemoo-chat-messages');
+      if (container) {
+        const welcome = container.querySelector('.firemoo-chat-welcome');
+        if (welcome) {
+          welcome.style.display = 'block';
+        }
+      }
+
+      // Show chat interface (WebSocket will connect when new conversation is created)
+      this.showChatInterface();
     }
 
     async createConversation(message) {
       try {
+        if (!this.visitorData) {
+          throw new Error('Visitor data is required');
+        }
+
         const response = await apiRequest('POST', '/api/chat/conversations', {
           visitor_id: visitorID,
+          name: this.visitorData.name,
+          email: this.visitorData.email,
+          phone: this.visitorData.phone,
           message: message,
           current_page: window.location.href,
           referrer: document.referrer || null
         });
 
         this.conversationId = response.id;
+        this.hasExistingConversation = true;
         
         // Save to localStorage
         const storageKey = `firemoo_chat_conversation_${visitorID}`;
         localStorage.setItem(storageKey, this.conversationId);
+
+        // Load messages to get the first message ID and mark it as visitor
+        // The first message in a new conversation is always from the visitor
+        try {
+          await this.loadMessages();
+          // Find the message that matches what we sent (should be the first or last message)
+          // Messages are ordered by created_at ASC, so first message is at index 0
+          // But we also check the last message in case ordering is different
+          const matchingMessage = this.messages.find(m => m.message === message && !m.id.toString().startsWith('temp_')) || 
+                                  (this.messages.length > 0 && !this.messages[0].id.toString().startsWith('temp_') ? this.messages[0] : null);
+          if (matchingMessage) {
+            this.sentMessageIds.add(matchingMessage.id);
+            matchingMessage.sender_type = 'visitor';
+            // Don't render again, loadMessages already rendered
+          }
+        } catch (error) {
+          // Ignore error, will be handled in sendMessage
+        }
+
+        // Connect WebSocket and subscribe to chat channel
+        this.shouldReconnect = true;
+        this.connectWebSocket();
 
         return response;
       } catch (error) {
@@ -609,29 +1112,70 @@
 
       if (!message || this.isLoading) return;
 
+      // Check if visitor data exists
+      if (!this.visitorData) {
+        this.showError('Mohon lengkapi data diri terlebih dahulu.');
+        return;
+      }
+
+      // Store message text before clearing input
+      const messageText = message;
+
       // Clear input
       input.value = '';
       input.disabled = true;
       this.isLoading = true;
 
+      // Track if this is a new conversation
+      const isNewConversation = !this.conversationId;
+      
+      // Only add temp message for existing conversations (optimistic update)
+      // For new conversations, we'll load messages after creation to avoid duplicates
+      let tempMessage = null;
+      if (!isNewConversation) {
+        tempMessage = {
+          id: 'temp_' + Date.now(),
+          message: messageText,
+          sender_type: 'visitor', // IMPORTANT: Always 'visitor' for messages sent from widget
+          created_at: new Date().toISOString()
+        };
+        this.messages.push(tempMessage);
+        this.renderMessages();
+      }
+
       try {
-        // If no conversation, create one
-        if (!this.conversationId) {
-          await this.createConversation(message);
+        // If no conversation, create one (this already sends the first message)
+        if (isNewConversation) {
+          await this.createConversation(messageText);
+          // createConversation already loads messages and marks the first message as visitor
+          // No need to render again as loadMessages already does it
+        } else {
+          // Send message for existing conversation
+          const sendResponse = await apiRequest('POST', `/api/chat/conversations/${this.conversationId}/messages`, {
+            message: messageText,
+            message_type: 'text'
+          });
+
+          // Store the sent message ID to ensure it's always marked as visitor
+          // This is CRITICAL: messages sent from this widget are always from visitor
+          const sentMessageId = sendResponse.id;
+          this.sentMessageIds.add(sentMessageId);
+
+          // Remove temp message before loading real messages
+          if (tempMessage) {
+            this.messages = this.messages.filter(m => m.id !== tempMessage.id);
+          }
+
+          // Reload messages to get server response (includes the message we just sent)
+          // This will replace the temp message with the real one from server
+          await this.loadMessages();
         }
-
-        // Send message
-        await apiRequest('POST', `/api/chat/conversations/${this.conversationId}/messages`, {
-          message: message,
-          message_type: 'text'
-        });
-
-        // Add message to UI immediately
-        this.addMessage(message, 'visitor');
-
-        // Reload messages to get server response
-        await this.loadMessages();
       } catch (error) {
+        // Remove temp message on error
+        if (tempMessage) {
+          this.messages = this.messages.filter(m => m.id !== tempMessage.id);
+          this.renderMessages();
+        }
         this.showError('Gagal mengirim pesan. Silakan coba lagi.');
       } finally {
         input.disabled = false;
@@ -647,8 +1191,61 @@
         const response = await apiRequest('GET', `/api/chat/conversations/${this.conversationId}/messages?limit=50`);
         
         if (response.messages && response.messages.length > 0) {
-          this.messages = response.messages;
+          // Normalize sender_type for all messages
+          // IMPORTANT: Pesan dari visitor harus tetap 'visitor', bukan 'agent'
+          const normalizedMessages = response.messages.map(msg => {
+            // CRITICAL: If this message was sent from this widget, it's always 'visitor'
+            if (this.sentMessageIds.has(msg.id)) {
+              return {
+                ...msg,
+                sender_type: 'visitor'
+              };
+            }
+            
+            // Normalize sender_type: case-insensitive, trim whitespace
+            let senderType = (msg.sender_type || '').toString().toLowerCase().trim();
+            
+            // If sender_type is empty or unclear, try to determine from sender_id
+            // If sender_id matches our visitorID pattern or is from conversation visitor, it's visitor
+            if (!senderType || (senderType !== 'visitor' && senderType !== 'agent')) {
+              // Check if we can determine from sender_id
+              // For now, default to 'agent' if unclear (but this should rarely happen)
+              senderType = 'agent';
+            }
+            
+            // Final normalization: only 'visitor' stays as 'visitor', everything else is 'agent'
+            const finalSenderType = senderType === 'visitor' ? 'visitor' : 'agent';
+            
+            return {
+              ...msg,
+              sender_type: finalSenderType
+            };
+          });
+          
+          // Remove duplicates by ID: use Set to track unique message IDs
+          const seenIds = new Set();
+          const uniqueMessages = normalizedMessages.filter(msg => {
+            const msgId = msg.id ? msg.id.toString() : null;
+            if (!msgId) {
+              // Messages without ID are kept (shouldn't happen, but handle it)
+              return true;
+            }
+            if (seenIds.has(msgId)) {
+              return false; // Duplicate, skip
+            }
+            seenIds.add(msgId);
+            return true; // Unique, keep
+          });
+          
+          // Simply replace all messages with server messages (after removing temp messages)
+          // This ensures no duplicates and no temp messages remain
+          this.messages = uniqueMessages;
           this.renderMessages();
+        }
+        
+        // After loading messages, ensure WebSocket is connected
+        if (this.isChatActive) {
+          this.connectWebSocket();
         }
       } catch (error) {
         console.error('Failed to load messages:', error);
@@ -675,14 +1272,28 @@
         welcome.remove();
       }
 
+      // Store current scroll position
+      const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
       // Clear existing messages (except welcome)
       const existingMessages = container.querySelectorAll('.firemoo-chat-message');
       existingMessages.forEach(msg => msg.remove());
 
       // Render messages
-      this.messages.forEach(msg => {
+      this.messages.forEach((msg, index) => {
+        // Normalize sender_type: case-insensitive, trim whitespace
+        // IMPORTANT: Pesan dari visitor harus tetap 'visitor', bukan 'agent'
+        // - visitor = visitor (pengirim/visitor di KANAN)
+        // - agent/admin/user = agent (penerima/admin di KIRI)
+        const senderTypeRaw = (msg.sender_type || '').toString().toLowerCase().trim();
+        const senderType = senderTypeRaw === 'visitor' ? 'visitor' : 'agent';
+        
         const messageDiv = document.createElement('div');
-        messageDiv.className = `firemoo-chat-message ${msg.sender_type}`;
+        messageDiv.className = `firemoo-chat-message ${senderType}`;
+        
+        // Create wrapper for bubble and time
+        const messageContent = document.createElement('div');
+        messageContent.className = 'firemoo-chat-message-content';
         
         const bubble = document.createElement('div');
         bubble.className = 'firemoo-chat-message-bubble';
@@ -691,18 +1302,65 @@
         const time = document.createElement('div');
         time.className = 'firemoo-chat-message-time';
         const date = new Date(msg.created_at);
-        time.textContent = date.toLocaleTimeString('id-ID', { 
+        // Use user's local timezone instead of hardcoded 'id-ID'
+        time.textContent = date.toLocaleTimeString(undefined, { 
           hour: '2-digit', 
-          minute: '2-digit' 
+          minute: '2-digit',
+          hour12: false
         });
 
-        messageDiv.appendChild(bubble);
-        messageDiv.appendChild(time);
+        messageContent.appendChild(bubble);
+        messageContent.appendChild(time);
+        messageDiv.appendChild(messageContent);
         container.appendChild(messageDiv);
+
+        // Add smooth animation for new messages (especially from agent)
+        if (index === this.messages.length - 1) {
+          // Last message - add animation
+          setTimeout(() => {
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = senderType === 'visitor' 
+              ? 'translateX(10px)' 
+              : 'translateX(-10px)';
+            messageDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            
+            requestAnimationFrame(() => {
+              messageDiv.style.opacity = '1';
+              messageDiv.style.transform = 'translateX(0)';
+            });
+          }, 10);
+        }
       });
 
-      // Scroll to bottom
-      container.scrollTop = container.scrollHeight;
+      // Smooth scroll to bottom if user was at bottom or if it's a new message
+      if (wasAtBottom || this.messages.length > 0) {
+        this.smoothScrollToBottom(container);
+      }
+    }
+
+    smoothScrollToBottom(container) {
+      const targetScroll = container.scrollHeight - container.clientHeight;
+      const startScroll = container.scrollTop;
+      const distance = targetScroll - startScroll;
+      const duration = 300;
+      let start = null;
+
+      const animateScroll = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const percentage = Math.min(progress / duration, 1);
+        
+        // Easing function (ease-out)
+        const easeOut = 1 - Math.pow(1 - percentage, 3);
+        
+        container.scrollTop = startScroll + (distance * easeOut);
+        
+        if (progress < duration) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
     }
 
     showTyping() {
@@ -738,20 +1396,267 @@
       }, 3000);
     }
 
-    startPolling() {
-      // Poll for new messages every 3 seconds
-      this.pollInterval = setInterval(() => {
+    connectWebSocket() {
+      // Don't connect if already connected or no conversation
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        return;
+      }
+
+      if (!this.conversationId) {
+        // Will connect when conversation is created
+        return;
+      }
+
+      // Build WebSocket URL
+      let wsUrl;
+      if (config.baseUrl.startsWith('https://')) {
+        wsUrl = config.baseUrl.replace('https://', 'wss://');
+      } else if (config.baseUrl.startsWith('http://')) {
+        wsUrl = config.baseUrl.replace('http://', 'ws://');
+      } else {
+        // If no protocol, assume https
+        wsUrl = 'wss://' + config.baseUrl;
+      }
+      
+      // Add /websocket path and query parameters
+      const params = new URLSearchParams({
+        api_key: config.apiKey,
+        website_url: config.websiteUrl
+      });
+      wsUrl = `${wsUrl}/websocket?${params.toString()}`;
+
+      try {
+        this.ws = new WebSocket(wsUrl);
+
+        this.ws.onopen = () => {
+          this.wsReconnectAttempts = 0;
+          
+          // Small delay to ensure connection is fully established
+          setTimeout(() => {
+            // Subscribe to chat channel for this conversation
         if (this.conversationId) {
-          this.loadMessages();
-        }
-      }, this.pollDelay);
+              this.subscribeToChatChannel();
+            }
+          }, 100);
+        };
+
+        this.ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            // Handle WebSocket message
+            this.handleWebSocketMessage(message);
+          } catch (error) {
+            // Try to handle as plain text if JSON parsing fails
+            if (typeof event.data === 'string') {
+              this.handleWebSocketMessage({ message: event.data });
+            } else {
+              console.error('Firemoo Chat: Failed to parse WebSocket message', error, event.data);
+            }
+          }
+        };
+
+        this.ws.onerror = (error) => {
+          console.error('Firemoo Chat: WebSocket error', error);
+        };
+
+        this.ws.onclose = () => {
+          // Auto-reconnect if should reconnect and haven't exceeded max attempts
+          if (this.shouldReconnect && this.wsReconnectAttempts < this.maxReconnectAttempts && this.isOpen && this.conversationId) {
+            this.wsReconnectAttempts++;
+            setTimeout(() => {
+              // Check again before reconnecting
+              if (this.shouldReconnect && this.isOpen && this.conversationId) {
+                this.connectWebSocket();
+              }
+            }, this.reconnectDelay * this.wsReconnectAttempts);
+          }
+        };
+      } catch (error) {
+        console.error('Firemoo Chat: Failed to create WebSocket connection', error);
+      }
     }
 
-    stopPolling() {
-      if (this.pollInterval) {
-        clearInterval(this.pollInterval);
-        this.pollInterval = null;
+    subscribeToChatChannel() {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        // Retry subscription if WebSocket is not ready yet
+        if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+          setTimeout(() => this.subscribeToChatChannel(), 500);
+        }
+        return;
       }
+
+      if (!this.conversationId) {
+        return;
+      }
+
+      // Subscribe to chat channel for this conversation
+      // Support multiple subscription formats
+      const subscribeMessages = [
+        {
+          action: 'subscribe',
+          channel: `chat:${this.conversationId}`
+        },
+        {
+          type: 'subscribe',
+          channel: `chat:${this.conversationId}`
+        },
+        {
+          event: 'subscribe',
+          channel: `chat:${this.conversationId}`
+        }
+      ];
+
+      try {
+        // Try first format (most common)
+        this.ws.send(JSON.stringify(subscribeMessages[0]));
+      } catch (error) {
+        console.error('Firemoo Chat: Failed to subscribe to chat channel', error);
+      }
+    }
+
+    handleWebSocketMessage(message) {
+      // Skip if no message or invalid
+      if (!message || typeof message !== 'object') {
+        return;
+      }
+      
+      // Handle different message types
+      // Support multiple message formats from backend
+      if (message.type === 'channel:event' || message.type === 'event') {
+        // Check if it's a chat message event
+        const channel = message.channel || message.channel_name;
+        if (channel && (channel.startsWith('chat:') || channel === `chat:${this.conversationId}`)) {
+          const eventName = message.event || message.event_name;
+          // Support multiple event names
+          if (eventName === 'message:new' || 
+              eventName === 'message:created' || 
+              eventName === 'new_message' ||
+              eventName === 'message') {
+            // New message received
+            let messageData = message.data || message.payload || message.message;
+            
+            if (messageData) {
+              // Parse if it's a string
+              if (typeof messageData === 'string') {
+                try {
+                  messageData = JSON.parse(messageData);
+                } catch (e) {
+                  // If parsing fails, treat as plain text
+                  messageData = { message: messageData };
+                }
+              }
+              
+              // Ensure we have a proper message object
+              const newMessage = {
+                id: messageData.id || messageData.message_id || 'ws_' + Date.now(),
+                message: messageData.message || messageData.text || messageData.content || '',
+                sender_type: messageData.sender_type || messageData.senderType || 'agent',
+                created_at: messageData.created_at || messageData.createdAt || new Date().toISOString(),
+                conversation_id: messageData.conversation_id || messageData.conversationId || this.conversationId
+              };
+              
+              // CRITICAL: If this message was sent from this widget, it's always 'visitor'
+              if (this.sentMessageIds.has(newMessage.id)) {
+                newMessage.sender_type = 'visitor';
+              } else {
+                // Normalize sender_type: case-insensitive, trim whitespace
+                // IMPORTANT: Pesan dari visitor harus tetap 'visitor', bukan 'agent'
+                const senderType = (newMessage.sender_type || '').toString().toLowerCase().trim();
+                newMessage.sender_type = senderType === 'visitor' ? 'visitor' : 'agent';
+              }
+              
+              // Only add if it's not already in messages and belongs to current conversation
+              // Also check if conversation_id matches or if it's not specified (assume current conversation)
+              const conversationMatches = !newMessage.conversation_id || 
+                                         newMessage.conversation_id === this.conversationId ||
+                                         newMessage.conversation_id.toString() === this.conversationId.toString();
+              
+              const exists = this.messages.some(m => m.id === newMessage.id || 
+                                                     (m.id && newMessage.id && m.id.toString() === newMessage.id.toString()));
+              
+              if (!exists && conversationMatches && this.conversationId) {
+                // Hide typing indicator if showing
+                this.hideTyping();
+                
+                // Ensure conversation_id is set
+                newMessage.conversation_id = this.conversationId;
+                
+                // Add message with smooth animation
+                this.messages.push(newMessage);
+                this.renderMessages();
+                
+                // Show notification sound or visual feedback for agent messages
+                if (newMessage.sender_type === 'agent' && !this.isOpen) {
+                  // Could add notification here if chat is closed
+                }
+              }
+            }
+          }
+        }
+      } else if (message.type === 'system:event' || message.type === 'system') {
+        // Handle system events
+        const eventName = message.event || message.event_name;
+        if (eventName === 'connected' || eventName === 'connection:established') {
+          // WebSocket connected, subscribe to chat channel
+          if (this.conversationId) {
+            this.subscribeToChatChannel();
+          }
+        }
+      } else if (message.action === 'message' || message.message) {
+        // Direct message format (fallback)
+        const newMessage = {
+          id: message.id || message.message_id || 'ws_' + Date.now(),
+          message: message.message || message.text || message.content || '',
+          sender_type: message.sender_type || message.senderType || 'agent',
+          created_at: message.created_at || message.createdAt || new Date().toISOString(),
+          conversation_id: message.conversation_id || message.conversationId || this.conversationId
+        };
+        
+        // Normalize sender_type
+        if (!this.sentMessageIds.has(newMessage.id)) {
+          const senderType = (newMessage.sender_type || '').toString().toLowerCase().trim();
+          newMessage.sender_type = senderType === 'visitor' ? 'visitor' : 'agent';
+        } else {
+          newMessage.sender_type = 'visitor';
+        }
+        
+        // Only add if it's not already in messages and belongs to current conversation
+        const conversationMatches = !newMessage.conversation_id || 
+                                   newMessage.conversation_id === this.conversationId ||
+                                   newMessage.conversation_id.toString() === this.conversationId.toString();
+        
+        const exists = this.messages.some(m => m.id === newMessage.id || 
+                                               (m.id && newMessage.id && m.id.toString() === newMessage.id.toString()));
+        
+        if (!exists && conversationMatches && this.conversationId) {
+          // Ensure conversation_id is set
+          newMessage.conversation_id = this.conversationId;
+          
+          this.hideTyping();
+          this.messages.push(newMessage);
+          this.renderMessages();
+        }
+      }
+    }
+
+    disconnectWebSocket() {
+      this.shouldReconnect = false;
+      
+      if (this.ws) {
+        // Remove event listeners to prevent reconnection
+        this.ws.onclose = null;
+        this.ws.onerror = null;
+        this.ws.onmessage = null;
+        this.ws.onopen = null;
+        
+        if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+          this.ws.close();
+        }
+        this.ws = null;
+      }
+      
+      // Reset reconnect attempts
+      this.wsReconnectAttempts = 0;
     }
   }
 
