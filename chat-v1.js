@@ -1,7 +1,7 @@
 /**
  * Firemoo Chat Widget - Embeddable Chat Widget
  * Version: 1.0.0
- *
+ * update : 2025-11-17
  * Usage:
  *   <script src="firemoo-chat.js" 
  *           api-key="YOUR_API_KEY" 
@@ -15,7 +15,6 @@
 
   // Get configuration from script tag
   function getConfig() {
-    const scripts = document.getElementsByTagName('script');
     let config = {
       apiKey: null,
       baseUrl: 'https://api-firemoo.dmpt.my.id',
@@ -25,17 +24,33 @@
       position: 'bottom-right' // bottom-right, bottom-left
     };
 
-    for (let i = 0; i < scripts.length; i++) {
-      const script = scripts[i];
-      if (script.src && script.src.includes('firemoo-chat')) {
-        config.apiKey = script.getAttribute('api-key') || script.getAttribute('data-api-key');
-        config.baseUrl = script.getAttribute('base-url') || script.getAttribute('data-base-url') || config.baseUrl;
-        config.websiteUrl = script.getAttribute('website-url') || script.getAttribute('data-website-url') || config.websiteUrl;
-        config.primaryColor = script.getAttribute('primary-color') || script.getAttribute('data-primary-color') || config.primaryColor;
-        config.textColor = script.getAttribute('text-color') || script.getAttribute('data-text-color') || config.textColor;
-        config.position = script.getAttribute('position') || script.getAttribute('data-position') || config.position;
-        break;
+    let targetScript = document.currentScript;
+
+    if (!targetScript) {
+      const scripts = document.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        const script = scripts[i];
+        const hasFiremooAttr = script.hasAttribute('api-key') || script.hasAttribute('data-api-key');
+        const src = script.src || '';
+        const matchesSrc =
+          src.includes('firemoo-chat') ||
+          src.includes('cdn-firemoo') ||
+          src.includes('chat-v1');
+
+        if (hasFiremooAttr || matchesSrc) {
+          targetScript = script;
+          break;
+        }
       }
+    }
+
+    if (targetScript) {
+      config.apiKey = targetScript.getAttribute('api-key') || targetScript.getAttribute('data-api-key');
+      config.baseUrl = targetScript.getAttribute('base-url') || targetScript.getAttribute('data-base-url') || config.baseUrl;
+      config.websiteUrl = targetScript.getAttribute('website-url') || targetScript.getAttribute('data-website-url') || config.websiteUrl;
+      config.primaryColor = targetScript.getAttribute('primary-color') || targetScript.getAttribute('data-primary-color') || config.primaryColor;
+      config.textColor = targetScript.getAttribute('text-color') || targetScript.getAttribute('data-text-color') || config.textColor;
+      config.position = targetScript.getAttribute('position') || targetScript.getAttribute('data-position') || config.position;
     }
 
     if (!config.apiKey) {
