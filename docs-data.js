@@ -716,7 +716,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
         },
         {
             id: 'chat-widget',
-            title: '9. Chat Widget',
+            title: '10. Chat Widget',
             content: `
                 <p class="mb-4">Firemoo Chat Widget adalah widget chat yang dapat di-embed di website Anda. Widget ini muncul di pojok kanan bawah (atau kiri) dan memungkinkan visitor untuk berkomunikasi dengan tim support Anda secara real-time.</p>
 
@@ -783,7 +783,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
                 <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
                     <div class="text-xl font-bold text-gray-900 mb-2">Konfigurasi Dasar</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>&lt;script
-    src="firemoo-chat.js"
+    src="https://cdn.jsdelivr.net/gh/pimphand/cdn-firemoo/firemoo-chat.js"
     api-key="your-api-key-here"
     base-url="https://api-firemoo.dmpt.my.id"&gt;
 &lt;/script&gt;</code></pre>
@@ -792,7 +792,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
                 <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
                     <div class="text-xl font-bold text-gray-900 mb-2">Dengan Warna Custom</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>&lt;script
-    src="firemoo-chat.js"
+    src="https://cdn.jsdelivr.net/gh/pimphand/cdn-firemoo/firemoo-chat.js"
     api-key="your-api-key-here"
     base-url="https://api-firemoo.dmpt.my.id"
     primary-color="#3b82f6"
@@ -803,7 +803,7 @@ console.log(firemoo.license);       // "MIT"</code></pre>
                 <div class="bg-gray-50 border-l-4 border-gray-900 p-6 rounded-lg mb-6">
                     <div class="text-xl font-bold text-gray-900 mb-2">Posisi Kiri Bawah</div>
                     <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto"><code>&lt;script
-    src="firemoo-chat.js"
+    src="https://cdn.jsdelivr.net/gh/pimphand/cdn-firemoo/firemoo-chat.js"
     api-key="your-api-key-here"
     base-url="https://api-firemoo.dmpt.my.id"
     position="bottom-left"&gt;

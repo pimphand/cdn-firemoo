@@ -18,7 +18,7 @@
     const scripts = document.getElementsByTagName('script');
     let config = {
       apiKey: null,
-      baseUrl: 'http://127.0.0.1:9090',
+      baseUrl: 'https://api-firemoo.dmpt.my.id',
       websiteUrl: window.location.origin,
       primaryColor: '#10b981', // Default green
       textColor: '#ffffff', // Default white
