@@ -1,7 +1,7 @@
 /**
  * Firemoo Chat Widget - Embeddable Chat Widget
  * Version: 1.0.0
- * update : 2025-11-17
+ * update : 2025-11-17 21:58
  * Usage:
  *   <script src="firemoo-chat.js" 
  *           api-key="YOUR_API_KEY" 
@@ -46,7 +46,14 @@
 
     if (targetScript) {
       config.apiKey = targetScript.getAttribute('api-key') || targetScript.getAttribute('data-api-key');
-      config.baseUrl = targetScript.getAttribute('base-url') || targetScript.getAttribute('data-base-url') || config.baseUrl;
+      const baseUrlAttr =
+        targetScript.getAttribute('base-url') ||
+        targetScript.getAttribute('data-base-url') ||
+        targetScript.getAttribute('url') ||
+        targetScript.getAttribute('data-url');
+      if (baseUrlAttr) {
+        config.baseUrl = baseUrlAttr;
+      }
       config.websiteUrl = targetScript.getAttribute('website-url') || targetScript.getAttribute('data-website-url') || config.websiteUrl;
       config.primaryColor = targetScript.getAttribute('primary-color') || targetScript.getAttribute('data-primary-color') || config.primaryColor;
       config.textColor = targetScript.getAttribute('text-color') || targetScript.getAttribute('data-text-color') || config.textColor;
